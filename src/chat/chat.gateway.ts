@@ -31,16 +31,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('message')
   async handleMessage(
-    @MessageBody() text: string,
+    @MessageBody() data: { user: string; text: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const ip = client.handshake.address.replace(/^::ffff:/, '');
     const message = {
-      user: ip,
-      text,
+      user: data.user, // ✅ 改用前端傳來的 email（或 nickname）
+      text: data.text,
     };
-
-    this.server.emit('message', message);
-    await this.chatService.saveMessage(message); // ✅ 存入 MongoDB
-  }
+  
+    this.server.emit('message', message);           // ✅ 廣播出去
+    await this.chatService.saveMessage(message);    // ✅ 存入 MongoDB
+  }  
 }
